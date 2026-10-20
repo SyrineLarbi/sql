@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SQL Zero to Hero</title>
+<script>try{var t=localStorage.getItem("sql-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --sans:"Inter","Segoe UI",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",Consolas,"SFMono-Regular",monospace;
+  --bg:#F7F7F5;--surface:#FFFFFF;--code-bg:#F2F3F5;--line:#E4E4E0;
+  --ink:#17191C;--ink-2:#454950;--ink-3:#7A7E86;
+  --accent:#2D5BD0;--accent-soft:#EAF0FC;
+  --warn:#9A6A00;--warn-soft:#FFF6E0;--bad:#B3372B;--bad-soft:#FDECEA;--good:#1D7A50;--good-soft:#E6F4EC;
+  --kw:#2D5BD0;--str:#1D7A50;--cm:#8A8E96;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme]){
+  --bg:#121316;--surface:#1A1C20;--code-bg:#22252B;--line:#2E3138;
+  --ink:#ECECEA;--ink-2:#C2C5CB;--ink-3:#8D919A;
+  --accent:#8FB0F5;--accent-soft:#1C2436;
+  --warn:#E8BE5F;--warn-soft:#2A2312;--bad:#F09A90;--bad-soft:#2D1916;--good:#82D2A9;--good-soft:#14271D;
+  --kw:#8FB0F5;--str:#82D2A9;--cm:#868A93;}}
+:root[data-theme="dark"]{
+  --bg:#121316;--surface:#1A1C20;--code-bg:#22252B;--line:#2E3138;
+  --ink:#ECECEA;--ink-2:#C2C5CB;--ink-3:#8D919A;
+  --accent:#8FB0F5;--accent-soft:#1C2436;
+  --warn:#E8BE5F;--warn-soft:#2A2312;--bad:#F09A90;--bad-soft:#2D1916;--good:#82D2A9;--good-soft:#14271D;
+  --kw:#8FB0F5;--str:#82D2A9;--cm:#868A93;}
+:root[data-theme="sepia"]{
+  --bg:#F3EAD6;--surface:#F8F1E2;--code-bg:#E9DDC3;--line:#D5C5A3;
+  --ink:#3A2E22;--ink-2:#574736;--ink-3:#85725B;
+  --accent:#7A4E1E;--accent-soft:#EBDFC4;
+  --warn:#7C5911;--warn-soft:#EEE0BD;--bad:#983A24;--bad-soft:#F0DCC7;--good:#3D682C;--good-soft:#E0E3C4;
+  --kw:#7A4E1E;--str:#3D682C;--cm:#85725B;}
+html:root[data-theme="sepia"],html:root[data-theme="light"]{color-scheme:light}
+html:root[data-theme="dark"]{color-scheme:dark}
+.theme-switch{position:fixed;right:16px;bottom:16px;z-index:200;display:flex;gap:2px;padding:3px;background:var(--surface);border:1px solid var(--line);border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.15);font-family:var(--mono)}
+.theme-switch button{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:999px;background:transparent;cursor:pointer;padding:6px 11px;color:var(--ink-3);font:inherit;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.theme-switch button:hover{color:var(--ink);background:var(--accent-soft)}
+.theme-switch button[aria-pressed="true"]{color:var(--surface);background:var(--ink)}
+.theme-switch svg{width:14px;height:14px;flex:none}
+@media (max-width:560px){.theme-switch{right:12px;bottom:12px}.theme-switch button{padding:7px 9px}.theme-switch button span{display:none}}
+@media print{.theme-switch{display:none}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:70px}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.7 var(--sans);overflow-x:hidden}
+a{color:var(--accent);text-underline-offset:2px}
+b,strong{color:var(--ink);font-weight:600}
+
+/* top bar */
+.bar{position:sticky;top:0;z-index:10;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar-in{max-width:var(--w);margin:0 auto;padding:10px 24px;display:flex;align-items:center;gap:12px}
+.bar .brand{font-weight:700;font-size:15px;color:var(--ink);text-decoration:none;margin-right:auto}
+.bar .other{font-size:14px;font-weight:500;text-decoration:none}
+
+.wrap{max-width:var(--w);margin:0 auto;padding:36px 24px 72px}
+header.hero{margin-bottom:28px}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+h1{font-weight:700;font-size:clamp(30px,5vw,42px);line-height:1.15;margin:8px 0 12px;letter-spacing:-.02em}
+.lede{color:var(--ink-2);margin:0;max-width:70ch;font-size:18px}
+h2{font-weight:700;letter-spacing:-.01em}
+h3{font-size:17px;font-weight:600;margin:28px 0 6px}
+p,li{color:var(--ink-2)}
+
+pre{font:14.5px/1.6 var(--mono);background:var(--code-bg);color:var(--ink);padding:14px 16px;margin:12px 0;border-radius:8px;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere}
+code{font-family:var(--mono);font-size:.88em;background:var(--code-bg);padding:2px 5px;border-radius:4px}
+pre code{background:none;padding:0;font-size:inherit}
+.k{color:var(--kw);font-weight:600}.s{color:var(--str)}.c{color:var(--cm);font-style:italic}
+
+.tbl{overflow-x:auto;margin:12px 0;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-size:12.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3);background:var(--code-bg)}
+
+footer{margin-top:48px;color:var(--ink-3);font-size:15px;border-top:1px solid var(--line);padding-top:16px}
+
+:root{--w:960px}
+.toc{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 22px}
+.toc ol{margin:0;padding-left:24px;columns:2;column-gap:32px}
+.toc li{font-size:15.5px;line-height:2;break-inside:avoid}
+.toc a{text-decoration:none}
+h2{font-size:clamp(23px,4vw,28px);line-height:1.25;margin:64px 0 8px}
+h2 .lv{display:block;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.why,.say,.trap{border-radius:10px;padding:14px 18px;margin:18px 0;font-size:16.5px}
+.why p,.say p,.trap p{margin:4px 0;color:var(--ink)}
+.why .t,.say .t,.trap .t{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:4px}
+.why{background:var(--accent-soft)}.why .t{color:var(--accent)}
+.say{background:var(--good-soft)}.say .t{color:var(--good)}
+.trap{background:var(--warn-soft)}.trap .t{color:var(--warn)}
+details{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:10px 0}
+summary{font-weight:600;font-size:15.5px;cursor:pointer;color:var(--ink)}
+details[open] summary{margin-bottom:8px}
+.ex{counter-reset:ex;margin-top:20px}
+.ex>details summary::before{counter-increment:ex;content:"Exercise " counter(ex) " · ";color:var(--accent)}
+.result{font-size:15px}
+
+@media (max-width:640px){
+  body{font-size:16px}
+  .bar-in{padding:8px 12px}
+  .bar .other{display:none}
+  .wrap{padding:24px 12px 56px}
+  .lede{font-size:17px}
+  pre{font-size:13.5px;padding:12px}
+  table{font-size:14px}
+  th,td{padding:7px 9px}
+  td{white-space:nowrap}
+  .toc ol{columns:1} .toc{padding:14px 16px} .why,.say,.trap{padding:12px 14px}
+}
+</style>
+</head>
+<body>
+<div class="bar"><div class="bar-in">
+  <a class="brand" href="index.html">SQL for Finance</a>
+  <a class="other" href="sql-cheat-sheet.html">Cheat sheet →</a>
+</div></div>
+<div class="wrap">
+<header class="hero">
+  <div class="eyebrow">Course · 15 levels · PostgreSQL · finance edition</div>
+  <h1>SQL from Zero to Hero</h1>
+  <p class="lede">A SQL course for finance teams. It starts with "what is a table?" and ends with aging reports, window functions, indexes and transactions. Every example uses one small accounts-payable database. Each level explains <b>why</b> the feature exists and <b>how</b> to write it, then gives you exercises with hidden answers. Keep the <a href="sql-cheat-sheet.html">cheat sheet</a> open beside it.</p>
+</header>
+
+<nav class="toc"><ol start="0">
+  <li><a href="#l0">Set up a playground</a></li>
+  <li><a href="#l1">What a database is</a></li>
+  <li><a href="#l2">Your first SELECT</a></li>
+  <li><a href="#l3">Filtering with WHERE</a></li>
+  <li><a href="#l4">Sorting and limiting</a></li>
+  <li><a href="#l5">Aggregates</a></li>
+  <li><a href="#l6">GROUP BY and HAVING</a></li>
+  <li><a href="#l7">JOINs and foreign keys</a></li>
+  <li><a href="#l8">NULL and CASE</a></li>
+  <li><a href="#l9">Subqueries and CTEs</a></li>
+  <li><a href="#l10">Changing data</a></li>
+  <li><a href="#l11">Designing tables</a></li>
+  <li><a href="#l12">Window functions</a></li>
+  <li><a href="#l13">Indexes and transactions</a></li>
+  <li><a href="#l14">The road after this</a></li>
+</ol></nav>
+
+<!-- ============ L0 ============ -->
+<h2 id="l0"><span class="lv">Level 0</span>Set up a playground (5 minutes)</h2>
+<p>You learn SQL by typing it. Reading alone is not enough. Pick a place to run queries:</p>
+<ul>
+  <li><b><a href="https://www.db-fiddle.com/">DB Fiddle</a></b>: choose "PostgreSQL" at the top, paste the script below into the left panel, and write your queries in the right panel. Nothing to install, no account needed.</li>
+  <li><b>Any PostgreSQL database you can use</b>: a local install, or a free cloud database. Use a separate scratch database, never a production or reporting database.</li>
+</ul>
+<p>Paste this script once. It builds a small accounts-payable system: <b>cost centres</b> spend money, <b>vendors</b> send <b>invoices</b>, and the company records <b>payments</b> against those invoices. All amounts are in EUR. Every example and exercise below uses these tables.</p>
+<pre><code><span class="k">CREATE TABLE</span> cost_centers (
+  id        <span class="k">INT PRIMARY KEY</span>,
+  name      <span class="k">TEXT NOT NULL</span>,
+  parent_id <span class="k">INT REFERENCES</span> cost_centers(id)
+);
+<span class="k">CREATE TABLE</span> vendors (
+  id      <span class="k">INT PRIMARY KEY</span>,
+  name    <span class="k">TEXT NOT NULL UNIQUE</span>,
+  country <span class="k">TEXT</span>
+);
+<span class="k">CREATE TABLE</span> invoices (
+  id             <span class="k">INT PRIMARY KEY</span>,
+  vendor_id      <span class="k">INT NOT NULL REFERENCES</span> vendors(id),
+  cost_center_id <span class="k">INT REFERENCES</span> cost_centers(id),
+  invoice_date   <span class="k">DATE NOT NULL</span>,
+  due_date       <span class="k">DATE NOT NULL</span>,
+  amount         <span class="k">NUMERIC</span>(12,2) <span class="k">NOT NULL</span>
+);
+<span class="k">CREATE TABLE</span> payments (
+  id         <span class="k">INT PRIMARY KEY</span>,
+  invoice_id <span class="k">INT NOT NULL REFERENCES</span> invoices(id),
+  paid_on    <span class="k">DATE NOT NULL</span>,
+  amount     <span class="k">NUMERIC</span>(12,2) <span class="k">NOT NULL</span>
+);
+
+<span class="k">INSERT INTO</span> cost_centers <span class="k">VALUES</span>
+ (1,<span class="s">'Head Office'</span>,NULL),(2,<span class="s">'Operations'</span>,1),
+ (3,<span class="s">'Marketing'</span>,1),(4,<span class="s">'IT'</span>,2),(5,<span class="s">'Legal'</span>,1);
+
+<span class="k">INSERT INTO</span> vendors <span class="k">VALUES</span>
+ (1,<span class="s">'Atlas Logistics'</span>,<span class="s">'Morocco'</span>),
+ (2,<span class="s">'Nordic Cloud'</span>,<span class="s">'Sweden'</span>),
+ (3,<span class="s">'Lumen Media'</span>,<span class="s">'France'</span>),
+ (4,<span class="s">'Gulf Office Supply'</span>,<span class="s">'UAE'</span>),
+ (5,<span class="s">'Orbit Consulting'</span>,<span class="s">'USA'</span>);
+
+<span class="k">INSERT INTO</span> invoices <span class="k">VALUES</span>
+ (101,1,2,   <span class="s">'2024-01-15'</span>,<span class="s">'2024-02-14'</span>,12000),
+ (102,2,4,   <span class="s">'2024-02-01'</span>,<span class="s">'2024-03-02'</span>, 4500),
+ (103,2,4,   <span class="s">'2024-03-01'</span>,<span class="s">'2024-03-31'</span>, 4500),
+ (104,3,3,   <span class="s">'2024-03-10'</span>,<span class="s">'2024-04-09'</span>, 8000),
+ (105,4,NULL,<span class="s">'2024-04-05'</span>,<span class="s">'2024-05-05'</span>,  950),
+ (106,1,2,   <span class="s">'2024-04-20'</span>,<span class="s">'2024-05-20'</span>,15000);
+
+<span class="k">INSERT INTO</span> payments <span class="k">VALUES</span>
+ (1,101,<span class="s">'2024-02-10'</span>,12000),
+ (2,102,<span class="s">'2024-03-05'</span>, 4500),
+ (3,104,<span class="s">'2024-04-01'</span>, 3000),
+ (4,106,<span class="s">'2024-05-15'</span>, 5000),
+ (5,106,<span class="s">'2024-06-10'</span>, 2500);</code></pre>
+<div class="trap"><span class="t">Watch out</span><p>The data has deliberate gaps. Invoice 105 has no cost centre. Orbit Consulting has no invoices. Legal and Head Office have no direct spend. Invoices 103 and 105 have no payments, 104 and 106 are only partly paid, and 106 has two payments. These gaps show where beginners usually go wrong.</p></div>
+
+<!-- ============ L1 ============ -->
+<h2 id="l1"><span class="lv">Level 1</span>What a database is</h2>
+<div class="why"><span class="t">Why</span><p>A spreadsheet breaks down once several people and programs edit it at the same time, when it holds millions of rows, or when the data must follow rules (like "every invoice belongs to a real vendor"). An ERP or accounting system stores its data in a <b>relational database</b>, and <b>SQL</b> (Structured Query Language) is the language for asking it questions directly, without waiting for someone to build a report.</p></div>
+<p>The vocabulary you need:</p>
+<div class="tbl"><table>
+  <tr><th>Word</th><th>Means</th><th>Spreadsheet equivalent</th></tr>
+  <tr><td>Table</td><td>One kind of thing (invoices)</td><td>One sheet</td></tr>
+  <tr><td>Row (record)</td><td>One instance (invoice 104)</td><td>One line</td></tr>
+  <tr><td>Column (field)</td><td>One property (amount), with a fixed type</td><td>One column</td></tr>
+  <tr><td>Primary key</td><td>The column that identifies each row and never repeats (<code>invoices.id</code>)</td><td>An invoice number you never reuse</td></tr>
+  <tr><td>Foreign key</td><td>A column pointing to another table's primary key (<code>invoices.vendor_id</code> → <code>vendors.id</code>)</td><td>A VLOOKUP that the database enforces</td></tr>
+</table></div>
+<h3>How our four tables link</h3>
+<pre><code>cost_centers.id  ◄── invoices.cost_center_id
+cost_centers.id  ◄── cost_centers.parent_id   (a centre's parent)
+vendors.id       ◄── invoices.vendor_id
+invoices.id      ◄── payments.invoice_id</code></pre>
+<p>Read each arrow as "points to". One vendor has many invoices; one invoice has zero, one or many payments. The foreign key always sits on the "many" side.</p>
+<p>SQL is <b>declarative</b>: you describe <i>what</i> you want ("unpaid invoices from Swedish vendors"), and the database works out <i>how</i> to fetch it. You never write loops.</p>
+<p>SQL commands fall into four families:</p>
+<ul>
+  <li><b>Query</b>: <code>SELECT</code> reads data (about 80% of an analyst's time).</li>
+  <li><b>Change data</b>: <code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>.</li>
+  <li><b>Define structure</b>: <code>CREATE</code>, <code>ALTER</code>, <code>DROP</code>.</li>
+  <li><b>Control</b>: <code>BEGIN</code>/<code>COMMIT</code> (transactions), <code>GRANT</code> (permissions).</li>
+</ul>
+<div class="say"><span class="t">Say it like this</span><p>"A relational database stores data in tables linked by keys, and SQL is the declarative language for reading and changing that data."</p></div>
+
+<!-- ============ L2 ============ -->
+<h2 id="l2"><span class="lv">Level 2</span>Your first SELECT</h2>
+<div class="why"><span class="t">Why</span><p>Every report, reconciliation and dashboard starts by reading rows. <code>SELECT</code> is the one command you will type thousands of times.</p></div>
+<pre><code><span class="k">SELECT</span> id, invoice_date, amount
+<span class="k">FROM</span> invoices;</code></pre>
+<p>Read it as: "From the invoices table, give me the id, date and amount columns." The semicolon ends the statement. Keywords are not case-sensitive, but writing them in CAPITALS is the usual convention and makes queries easier to scan.</p>
+<h3>Compute and rename</h3>
+<pre><code><span class="k">SELECT</span> id,
+       amount,
+       amount * 0.20            <span class="k">AS</span> vat,
+       amount * 1.20            <span class="k">AS</span> gross,
+       due_date - invoice_date  <span class="k">AS</span> payment_terms_days
+<span class="k">FROM</span> invoices;</code></pre>
+<p><code>AS</code> gives a column a new name in the result (an <b>alias</b>). Subtracting one date from another gives the number of days between them.</p>
+<h3>Remove duplicates</h3>
+<pre><code><span class="k">SELECT DISTINCT</span> vendor_id <span class="k">FROM</span> invoices;  <span class="c">-- 1, 2, 3, 4</span></code></pre>
+<div class="trap"><span class="t">Trap</span><p><code>SELECT *</code> is fine for a quick look. In saved reports, name the columns: the query is faster, and it does not break when someone adds a column.</p></div>
+<div class="ex">
+<details><summary>List every vendor's name and country.</summary><pre><code><span class="k">SELECT</span> name, country <span class="k">FROM</span> vendors;</code></pre></details>
+<details><summary>Show each invoice's id and amount after a 2% early-payment discount, as <code>discounted</code>.</summary><pre><code><span class="k">SELECT</span> id, amount * 0.98 <span class="k">AS</span> discounted <span class="k">FROM</span> invoices;</code></pre></details>
+</div>
+
+<!-- ============ L3 ============ -->
+<h2 id="l3"><span class="lv">Level 3</span>Filtering with WHERE</h2>
+<div class="why"><span class="t">Why</span><p>You almost never want every row. <code>WHERE</code> keeps only the rows for which a condition is true, and the database can use indexes to skip the rest without reading them.</p></div>
+<pre><code><span class="k">SELECT</span> id, amount
+<span class="k">FROM</span> invoices
+<span class="k">WHERE</span> amount &gt;= 5000;</code></pre>
+<h3>Combine conditions</h3>
+<pre><code><span class="k">WHERE</span> vendor_id = 2 <span class="k">AND</span> amount &lt; 5000        <span class="c">-- both must be true</span>
+<span class="k">WHERE</span> vendor_id = 1 <span class="k">OR</span> vendor_id = 3         <span class="c">-- at least one</span>
+<span class="k">WHERE</span> vendor_id <span class="k">IN</span> (1, 3)                   <span class="c">-- same, shorter</span>
+<span class="k">WHERE</span> amount <span class="k">BETWEEN</span> 1000 <span class="k">AND</span> 5000          <span class="c">-- inclusive</span>
+<span class="k">WHERE</span> due_date &lt; <span class="s">'2024-04-01'</span>               <span class="c">-- dates compare too</span>
+<span class="k">WHERE</span> name <span class="k">LIKE</span> <span class="s">'%Media'</span>                     <span class="c">-- ends with "Media"</span>
+<span class="k">WHERE</span> name <span class="k">ILIKE</span> <span class="s">'%cloud%'</span>                   <span class="c">-- contains, any case</span>
+<span class="k">WHERE</span> cost_center_id <span class="k">IS NULL</span>               <span class="c">-- not coded yet</span></code></pre>
+<div class="trap"><span class="t">Trap: AND before OR</span><p><code>WHERE vendor_id = 1 OR vendor_id = 2 AND amount &gt; 5000</code> means <code>1 OR (2 AND &gt;5000)</code>, because <code>AND</code> is evaluated first. Whenever you mix the two, add brackets.</p></div>
+<div class="trap"><span class="t">Trap: month-end filters</span><p>For "all invoices in March", use a <b>half-open range</b>: <code>invoice_date &gt;= '2024-03-01' AND invoice_date &lt; '2024-04-01'</code>. It works for dates and timestamps alike, and you never have to know whether the month has 30 or 31 days.</p></div>
+<div class="ex">
+<details><summary>Invoices issued in March 2024.</summary><pre><code><span class="k">SELECT</span> id, invoice_date, amount <span class="k">FROM</span> invoices
+<span class="k">WHERE</span> invoice_date &gt;= <span class="s">'2024-03-01'</span> <span class="k">AND</span> invoice_date &lt; <span class="s">'2024-04-01'</span>;</code></pre><p class="result">103 and 104.</p></details>
+<details><summary>Invoices from vendors 1 or 2 above 5000.</summary><pre><code><span class="k">SELECT</span> id, amount <span class="k">FROM</span> invoices
+<span class="k">WHERE</span> vendor_id <span class="k">IN</span> (1, 2) <span class="k">AND</span> amount &gt; 5000;</code></pre><p class="result">101 and 106.</p></details>
+<details><summary>Which invoices still need a cost centre?</summary><pre><code><span class="k">SELECT</span> id <span class="k">FROM</span> invoices <span class="k">WHERE</span> cost_center_id <span class="k">IS NULL</span>;   <span class="c">-- 105</span></code></pre></details>
+</div>
+
+<!-- ============ L4 ============ -->
+<h2 id="l4"><span class="lv">Level 4</span>Sorting and limiting</h2>
+<div class="why"><span class="t">Why</span><p>A table has <b>no built-in order</b>. If you want "the 3 largest invoices" or "the oldest due first", you must ask for it with <code>ORDER BY</code>. Otherwise the order can change between two runs of the same query.</p></div>
+<pre><code><span class="k">SELECT</span> id, amount
+<span class="k">FROM</span> invoices
+<span class="k">ORDER BY</span> amount <span class="k">DESC</span>, id   <span class="c">-- tie-break by id</span>
+<span class="k">LIMIT</span> 3;</code></pre>
+<p><code>OFFSET 3</code> skips the first 3 rows, which gives you page 2. Always add a tie-breaker (like <code>id</code>): invoices 102 and 103 have the same amount, and without one, their order is not guaranteed.</p>
+<div class="ex">
+<details><summary>The two invoices due first.</summary><pre><code><span class="k">SELECT</span> id, due_date <span class="k">FROM</span> invoices
+<span class="k">ORDER BY</span> due_date <span class="k">LIMIT</span> 2;</code></pre><p class="result">101 and 102.</p></details>
+</div>
+
+<!-- ============ L5 ============ -->
+<h2 id="l5"><span class="lv">Level 5</span>Aggregates: summarising rows</h2>
+<div class="why"><span class="t">Why</span><p>Finance questions start with "how much?", "how many?" and "on average?". Aggregate functions turn many rows into one number.</p></div>
+<pre><code><span class="k">SELECT</span> <span class="k">COUNT</span>(*)                  <span class="k">AS</span> invoices,     <span class="c">-- 6</span>
+       <span class="k">COUNT</span>(cost_center_id)     <span class="k">AS</span> coded,        <span class="c">-- 5</span>
+       <span class="k">COUNT</span>(<span class="k">DISTINCT</span> vendor_id)  <span class="k">AS</span> vendors,      <span class="c">-- 4</span>
+       <span class="k">SUM</span>(amount)                <span class="k">AS</span> total_spend,  <span class="c">-- 44950</span>
+       <span class="k">ROUND</span>(<span class="k">AVG</span>(amount), 2)      <span class="k">AS</span> avg_invoice,  <span class="c">-- 7491.67</span>
+       <span class="k">MIN</span>(invoice_date)          <span class="k">AS</span> first_invoice
+<span class="k">FROM</span> invoices;</code></pre>
+<p><code>COUNT(cost_center_id)</code> gives 5, not 6, because <b>aggregates skip NULLs</b>. Only <code>COUNT(*)</code> counts every row.</p>
+<div class="ex">
+<details><summary>Total paid out so far.</summary><pre><code><span class="k">SELECT</span> <span class="k">SUM</span>(amount) <span class="k">FROM</span> payments;   <span class="c">-- 27000</span></code></pre></details>
+</div>
+
+<!-- ============ L6 ============ -->
+<h2 id="l6"><span class="lv">Level 6</span>GROUP BY and HAVING</h2>
+<div class="why"><span class="t">Why</span><p>"Total spend" is one number. "Spend <b>per vendor</b>" is one number per group. <code>GROUP BY</code> splits the rows into piles, and each aggregate then runs once per pile. This is the SQL version of a pivot table.</p></div>
+<pre><code><span class="k">SELECT</span> vendor_id,
+       <span class="k">COUNT</span>(*)    <span class="k">AS</span> invoices,
+       <span class="k">SUM</span>(amount) <span class="k">AS</span> spend
+<span class="k">FROM</span> invoices
+<span class="k">GROUP BY</span> vendor_id
+<span class="k">ORDER BY</span> spend <span class="k">DESC</span>;
+<span class="c">-- 1: 2 / 27000 · 2: 2 / 9000 · 3: 1 / 8000 · 4: 1 / 950</span></code></pre>
+<p>If you group by <code>cost_center_id</code>, NULL forms its own group, so invoice 105 appears as a row with cost centre NULL.</p>
+<h3>WHERE vs HAVING</h3>
+<p><code>WHERE</code> filters <b>rows before</b> they are grouped. <code>HAVING</code> filters <b>groups after</b> the aggregates are calculated.</p>
+<pre><code><span class="k">SELECT</span> vendor_id, <span class="k">SUM</span>(amount) <span class="k">AS</span> spend
+<span class="k">FROM</span> invoices
+<span class="k">WHERE</span> invoice_date &gt;= <span class="s">'2024-02-01'</span>   <span class="c">-- ignore January first</span>
+<span class="k">GROUP BY</span> vendor_id
+<span class="k">HAVING</span> <span class="k">SUM</span>(amount) &gt; 5000;          <span class="c">-- big vendors only</span></code></pre>
+<h3>The rule that explains every GROUP BY error</h3>
+<p>After grouping, a group has one value for <code>vendor_id</code> but <i>several</i> due dates. Asking for <code>due_date</code> is therefore ambiguous. Every selected column must be <b>grouped</b> or <b>aggregated</b>.</p>
+<h3>The order the database really runs</h3>
+<p><b>FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT</b>. This is why an alias created in SELECT works in ORDER BY but not in WHERE: WHERE runs before SELECT has created it.</p>
+<div class="ex">
+<details><summary>Spend per cost centre id.</summary><pre><code><span class="k">SELECT</span> cost_center_id, <span class="k">SUM</span>(amount) <span class="k">AS</span> spend
+<span class="k">FROM</span> invoices <span class="k">GROUP BY</span> cost_center_id;</code></pre><p class="result">2: 27000 · 4: 9000 · 3: 8000 · NULL: 950.</p></details>
+<details><summary>Vendors (by id) with more than one invoice.</summary><pre><code><span class="k">SELECT</span> vendor_id, <span class="k">COUNT</span>(*)
+<span class="k">FROM</span> invoices
+<span class="k">GROUP BY</span> vendor_id
+<span class="k">HAVING</span> <span class="k">COUNT</span>(*) &gt; 1;</code></pre><p class="result">Vendors 1 and 2.</p></details>
+<details><summary>Spend per month.</summary><pre><code><span class="k">SELECT</span> <span class="k">TO_CHAR</span>(invoice_date, <span class="s">'YYYY-MM'</span>) <span class="k">AS</span> period, <span class="k">SUM</span>(amount)
+<span class="k">FROM</span> invoices <span class="k">GROUP BY</span> period <span class="k">ORDER BY</span> period;</code></pre><p class="result">2024-01: 12000 · 02: 4500 · 03: 12500 · 04: 15950. Postgres allows the alias in GROUP BY; not every database does.</p></details>
+</div>
+
+<!-- ============ L7 ============ -->
+<h2 id="l7"><span class="lv">Level 7</span>JOINs and foreign keys</h2>
+<div class="why"><span class="t">Why</span><p>Good design stores each fact <b>once</b>. The vendor's <i>name</i> lives only in <code>vendors</code>; each invoice stores just the <code>vendor_id</code> foreign key. If the vendor changes its name, you change one row. A JOIN follows the foreign key to put the pieces back together when you read.</p></div>
+<pre><code><span class="k">SELECT</span> i.id, v.name <span class="k">AS</span> vendor, i.amount
+<span class="k">FROM</span> invoices i
+<span class="k">JOIN</span> vendors v <span class="k">ON</span> v.id = i.vendor_id;</code></pre>
+<p>Think of it this way: for each invoice row, find the vendor rows where the <code>ON</code> condition is true, and glue the two together. <code>i</code> and <code>v</code> are short aliases; they are required when both tables have a column with the same name (here, <code>id</code> and <code>amount</code>).</p>
+<div class="say"><span class="t">Rule of thumb</span><p>The <code>ON</code> clause almost always reads <b>primary key = foreign key</b>: <code>v.id = i.vendor_id</code>, <code>c.id = i.cost_center_id</code>, <code>i.id = p.invoice_id</code>. If you can't name the foreign key you are following, stop and check the design.</p></div>
+<h3>The four joins, using invoices ⟷ cost_centers</h3>
+<div class="tbl"><table>
+  <tr><th>Join</th><th>Rows</th><th>What happens to the gaps</th></tr>
+  <tr><td><code>INNER JOIN</code></td><td>5</td><td>Invoice 105 is dropped (no cost centre)</td></tr>
+  <tr><td><code>LEFT JOIN</code></td><td>6</td><td>Invoice 105 is kept, with cost centre NULL</td></tr>
+  <tr><td><code>RIGHT JOIN</code></td><td>7</td><td>Head Office and Legal appear, with invoice NULL</td></tr>
+  <tr><td><code>FULL JOIN</code></td><td>8</td><td>All of the above</td></tr>
+</table></div>
+<p>Decide which one you need by asking: <b>"Which table must lose no rows?"</b> Put that table first and use <code>LEFT JOIN</code>. An INNER JOIN in a spend report silently hides uncoded invoices, which is exactly the money a controller wants to see.</p>
+<h3>Join three or more tables</h3>
+<pre><code><span class="k">SELECT</span> i.id, v.name <span class="k">AS</span> vendor, v.country,
+       <span class="k">COALESCE</span>(c.name, <span class="s">'Uncoded'</span>) <span class="k">AS</span> cost_center, i.amount
+<span class="k">FROM</span> invoices i
+<span class="k">JOIN</span>      vendors v      <span class="k">ON</span> v.id = i.vendor_id
+<span class="k">LEFT JOIN</span> cost_centers c <span class="k">ON</span> c.id = i.cost_center_id;</code></pre>
+<h3>Find what is missing (anti-join)</h3>
+<pre><code><span class="c">-- vendors on file who never invoiced</span>
+<span class="k">SELECT</span> v.name
+<span class="k">FROM</span> vendors v
+<span class="k">LEFT JOIN</span> invoices i <span class="k">ON</span> i.vendor_id = v.id
+<span class="k">WHERE</span> i.id <span class="k">IS NULL</span>;          <span class="c">-- Orbit Consulting</span></code></pre>
+<h3>Self join: a table joined to itself</h3>
+<p><code>cost_centers.parent_id</code> is a foreign key to the same table. To show each centre with its parent, join the table to itself under two aliases:</p>
+<pre><code><span class="k">SELECT</span> c.name, p.name <span class="k">AS</span> parent
+<span class="k">FROM</span> cost_centers c
+<span class="k">LEFT JOIN</span> cost_centers p <span class="k">ON</span> p.id = c.parent_id;
+<span class="c">-- IT → Operations, Operations → Head Office, Head Office → NULL …</span></code></pre>
+<div class="trap"><span class="t">Trap 1: WHERE breaks a LEFT JOIN</span><p><code>LEFT JOIN payments p ON … WHERE p.paid_on &gt;= '2024-04-01'</code> removes every invoice without a payment, because its <code>p.paid_on</code> is NULL. To keep them, move the condition into the join: <code>ON p.invoice_id = i.id AND p.paid_on &gt;= '2024-04-01'</code>.</p></div>
+<div class="trap"><span class="t">Trap 2: inflated totals (fan-out)</span><p>Invoice 106 has 2 payments. Join invoices to payments and the 15 000 invoice appears twice, so <code>SUM(i.amount)</code> returns 59 950 instead of 44 950. This is the most common cause of wrong numbers in finance reports. Fix it by summing payments per invoice first (Level 9), then joining.</p></div>
+<div class="ex">
+<details><summary>Spend per cost centre <b>name</b>, including centres with 0 spend.</summary><pre><code><span class="k">SELECT</span> c.name, <span class="k">COALESCE</span>(<span class="k">SUM</span>(i.amount), 0) <span class="k">AS</span> spend
+<span class="k">FROM</span> cost_centers c
+<span class="k">LEFT JOIN</span> invoices i <span class="k">ON</span> i.cost_center_id = c.id
+<span class="k">GROUP BY</span> c.name
+<span class="k">ORDER BY</span> spend <span class="k">DESC</span>;</code></pre><p class="result">Operations 27000 · IT 9000 · Marketing 8000 · Head Office 0 · Legal 0. Uncoded invoice 105 is not here; it has no cost centre to belong to.</p></details>
+<details><summary>Spend per vendor <b>country</b>.</summary><pre><code><span class="k">SELECT</span> v.country, <span class="k">SUM</span>(i.amount) <span class="k">AS</span> spend
+<span class="k">FROM</span> invoices i
+<span class="k">JOIN</span> vendors v <span class="k">ON</span> v.id = i.vendor_id
+<span class="k">GROUP BY</span> v.country
+<span class="k">ORDER BY</span> spend <span class="k">DESC</span>;</code></pre><p class="result">Morocco 27000 · Sweden 9000 · France 8000 · UAE 950.</p></details>
+<details><summary>Every payment with its vendor name (follow two foreign keys).</summary><pre><code><span class="k">SELECT</span> p.id, p.paid_on, p.amount, v.name <span class="k">AS</span> vendor
+<span class="k">FROM</span> payments p
+<span class="k">JOIN</span> invoices i <span class="k">ON</span> i.id = p.invoice_id
+<span class="k">JOIN</span> vendors  v <span class="k">ON</span> v.id = i.vendor_id;</code></pre></details>
+</div>
+
+<!-- ============ L8 ============ -->
+<h2 id="l8"><span class="lv">Level 8</span>NULL and CASE</h2>
+<div class="why"><span class="t">Why</span><p>NULL means <b>"unknown"</b>, not zero and not empty text. Comparing anything with an unknown gives "unknown", which is why <code>= NULL</code> never matches a row. In finance, a missing payment is a NULL after a LEFT JOIN, so most wrong balances start here.</p></div>
+<div class="tbl"><table>
+  <tr><th>Expression</th><th>Result</th></tr>
+  <tr><td><code>NULL = NULL</code></td><td>NULL (not true!)</td></tr>
+  <tr><td><code>4500 - NULL</code></td><td>NULL: an unpaid invoice's balance disappears</td></tr>
+  <tr><td><code>x IS NULL</code></td><td>true / false: the correct test</td></tr>
+  <tr><td><code>COALESCE(paid, 0)</code></td><td>paid, or 0 if paid is NULL</td></tr>
+  <tr><td><code>NULLIF(budget, 0)</code></td><td>NULL when budget = 0, which makes <code>actual / NULLIF(budget, 0)</code> safe</td></tr>
+</table></div>
+<div class="trap"><span class="t">The NOT IN trap</span><p><code>WHERE id NOT IN (SELECT parent_id FROM cost_centers)</code> should list the centres that have no children, but it returns <b>nothing</b>. Head Office's parent_id is NULL, and "is 3 different from unknown?" has no answer. Use <code>NOT EXISTS</code>, which handles NULLs correctly.</p></div>
+<h3>CASE: if/else inside a query</h3>
+<pre><code><span class="k">SELECT</span> id, amount,
+  <span class="k">CASE</span>
+    <span class="k">WHEN</span> amount &gt;= 10000 <span class="k">THEN</span> <span class="s">'CFO approval'</span>
+    <span class="k">WHEN</span> amount &gt;= 5000  <span class="k">THEN</span> <span class="s">'manager approval'</span>
+    <span class="k">ELSE</span> <span class="s">'auto-approve'</span>
+  <span class="k">END AS</span> approval_level
+<span class="k">FROM</span> invoices;</code></pre>
+<p>Combine CASE with an aggregate to build a pivot: one row, one column per category.</p>
+<pre><code><span class="k">SELECT</span>
+  <span class="k">SUM</span>(amount) <span class="k">FILTER</span> (<span class="k">WHERE</span> invoice_date &lt; <span class="s">'2024-04-01'</span>) <span class="k">AS</span> q1,
+  <span class="k">SUM</span>(<span class="k">CASE WHEN</span> invoice_date &gt;= <span class="s">'2024-04-01'</span> <span class="k">THEN</span> amount <span class="k">ELSE</span> 0 <span class="k">END</span>) <span class="k">AS</span> q2
+<span class="k">FROM</span> invoices;     <span class="c">-- q1 29000 · q2 15950</span></code></pre>
+<div class="ex">
+<details><summary>Count invoices per approval level (use the CASE above).</summary><pre><code><span class="k">SELECT</span> <span class="k">CASE WHEN</span> amount &gt;= 10000 <span class="k">THEN</span> <span class="s">'CFO approval'</span>
+            <span class="k">WHEN</span> amount &gt;= 5000  <span class="k">THEN</span> <span class="s">'manager approval'</span>
+            <span class="k">ELSE</span> <span class="s">'auto-approve'</span> <span class="k">END AS</span> level,
+       <span class="k">COUNT</span>(*), <span class="k">SUM</span>(amount)
+<span class="k">FROM</span> invoices <span class="k">GROUP BY</span> level;</code></pre><p class="result">CFO 2 (27000) · manager 1 (8000) · auto 3 (9950).</p></details>
+<details><summary>Cost centres that have no child centres, written correctly.</summary><pre><code><span class="k">SELECT</span> c.name <span class="k">FROM</span> cost_centers c
+<span class="k">WHERE NOT EXISTS</span> (<span class="k">SELECT</span> 1 <span class="k">FROM</span> cost_centers k <span class="k">WHERE</span> k.parent_id = c.id);</code></pre><p class="result">Marketing, IT, Legal.</p></details>
+</div>
+
+<!-- ============ L9 ============ -->
+<h2 id="l9"><span class="lv">Level 9</span>Subqueries and CTEs</h2>
+<div class="why"><span class="t">Why</span><p>Many finance questions need two steps: "which invoices are above the <i>average</i>?" needs the average first, and "what is still open?" needs the payments summed first. A subquery is a query inside a query. A CTE (<code>WITH</code>) gives that inner query a name, so you can read the steps from top to bottom, like a recipe.</p></div>
+<h3>Subquery that returns one value</h3>
+<pre><code><span class="k">SELECT</span> id, amount <span class="k">FROM</span> invoices
+<span class="k">WHERE</span> amount &gt; (<span class="k">SELECT</span> <span class="k">AVG</span>(amount) <span class="k">FROM</span> invoices);   <span class="c">-- 101, 104, 106</span></code></pre>
+<h3>Subquery that returns a list</h3>
+<pre><code><span class="k">SELECT</span> name <span class="k">FROM</span> vendors
+<span class="k">WHERE</span> id <span class="k">IN</span> (<span class="k">SELECT</span> vendor_id <span class="k">FROM</span> invoices <span class="k">WHERE</span> amount &gt; 10000);</code></pre>
+<h3>EXISTS: "is there at least one?"</h3>
+<pre><code><span class="k">SELECT</span> i.id <span class="k">FROM</span> invoices i
+<span class="k">WHERE NOT EXISTS</span> (
+  <span class="k">SELECT</span> 1 <span class="k">FROM</span> payments p <span class="k">WHERE</span> p.invoice_id = i.id
+);   <span class="c">-- never paid at all: 103, 105</span></code></pre>
+<h3>CTE: the open-balance report</h3>
+<pre><code><span class="k">WITH</span> paid <span class="k">AS</span> (
+  <span class="k">SELECT</span> invoice_id, <span class="k">SUM</span>(amount) <span class="k">AS</span> paid
+  <span class="k">FROM</span> payments <span class="k">GROUP BY</span> invoice_id        <span class="c">-- ONE row per invoice</span>
+)
+<span class="k">SELECT</span> i.id, v.name <span class="k">AS</span> vendor, i.amount,
+       <span class="k">COALESCE</span>(p.paid, 0)            <span class="k">AS</span> paid,
+       i.amount - <span class="k">COALESCE</span>(p.paid, 0) <span class="k">AS</span> open_balance
+<span class="k">FROM</span> invoices i
+<span class="k">JOIN</span>      vendors v <span class="k">ON</span> v.id = i.vendor_id
+<span class="k">LEFT JOIN</span> paid p    <span class="k">ON</span> p.invoice_id = i.id
+<span class="k">ORDER BY</span> open_balance <span class="k">DESC</span>;
+<span class="c">-- 106: 7500 · 104: 5000 · 103: 4500 · 105: 950 · 101, 102: 0</span></code></pre>
+<p>This is the fix for the fan-out trap in Level 7: payments are summed to <b>one row per invoice</b> before the join, so no invoice is counted twice. Total open: 17 950.</p>
+<div class="say"><span class="t">Habit</span><p>When a query feels hard, write it as a chain of CTEs: one small, testable step each. Run each step on its own (<code>SELECT * FROM paid</code>) and check it against a number you trust before you add the next one. Reconcile, then build.</p></div>
+<div class="ex">
+<details><summary>Open balance per vendor (vendor name and total still owed).</summary><pre><code><span class="k">WITH</span> paid <span class="k">AS</span> (
+  <span class="k">SELECT</span> invoice_id, <span class="k">SUM</span>(amount) <span class="k">AS</span> paid
+  <span class="k">FROM</span> payments <span class="k">GROUP BY</span> invoice_id
+)
+<span class="k">SELECT</span> v.name, <span class="k">SUM</span>(i.amount - <span class="k">COALESCE</span>(p.paid, 0)) <span class="k">AS</span> owed
+<span class="k">FROM</span> invoices i
+<span class="k">JOIN</span> vendors v <span class="k">ON</span> v.id = i.vendor_id
+<span class="k">LEFT JOIN</span> paid p <span class="k">ON</span> p.invoice_id = i.id
+<span class="k">GROUP BY</span> v.name
+<span class="k">ORDER BY</span> owed <span class="k">DESC</span>;</code></pre><p class="result">Atlas Logistics 7500 · Lumen Media 5000 · Nordic Cloud 4500 · Gulf Office Supply 950.</p></details>
+<details><summary>Invoices above <b>their own vendor's</b> average invoice.</summary><pre><code><span class="k">WITH</span> vendor_avg <span class="k">AS</span> (
+  <span class="k">SELECT</span> vendor_id, <span class="k">AVG</span>(amount) <span class="k">AS</span> avg_amount
+  <span class="k">FROM</span> invoices <span class="k">GROUP BY</span> vendor_id
+)
+<span class="k">SELECT</span> i.id, i.amount, a.avg_amount
+<span class="k">FROM</span> invoices i <span class="k">JOIN</span> vendor_avg a <span class="k">ON</span> a.vendor_id = i.vendor_id
+<span class="k">WHERE</span> i.amount &gt; a.avg_amount;</code></pre><p class="result">Only 106 (15000 vs Atlas's average of 13500).</p></details>
+</div>
+
+<!-- ============ L10 ============ -->
+<h2 id="l10"><span class="lv">Level 10</span>Changing data</h2>
+<div class="why"><span class="t">Why</span><p>Reading is safe. Writing is permanent, and in finance it is audited. Even if you mostly report, you need to understand these commands to load data, fix coding errors, and read what your systems do behind the scenes.</p></div>
+<pre><code><span class="k">INSERT INTO</span> vendors (id, name, country) <span class="k">VALUES</span> (6, <span class="s">'Delta Print'</span>, <span class="s">'Spain'</span>);
+
+<span class="k">UPDATE</span> invoices
+<span class="k">SET</span> cost_center_id = 3
+<span class="k">WHERE</span> id = 105
+<span class="k">RETURNING</span> id, cost_center_id;      <span class="c">-- Postgres: show the result</span>
+
+<span class="k">DELETE FROM</span> vendors <span class="k">WHERE</span> id = 6;</code></pre>
+<h3>The safe workflow</h3>
+<ol>
+  <li>Write the <code>WHERE</code> as a <code>SELECT</code> first, and check exactly which rows come back.</li>
+  <li>Wrap the change in <code>BEGIN;</code> … check with a SELECT … then <code>COMMIT;</code> or <code>ROLLBACK;</code>.</li>
+  <li>Never paste user input into SQL text. Use parameters (<code>WHERE id = $1</code>). Pasting the text directly is how <b>SQL injection</b> happens.</li>
+</ol>
+<h3>Upsert: insert, or update if it already exists</h3>
+<pre><code><span class="k">INSERT INTO</span> vendors (id, name, country) <span class="k">VALUES</span> (5, <span class="s">'Orbit Consulting LLC'</span>, <span class="s">'USA'</span>)
+<span class="k">ON CONFLICT</span> (id) <span class="k">DO UPDATE SET</span> name = <span class="k">EXCLUDED</span>.name;</code></pre>
+<div class="trap"><span class="t">Foreign keys protect you</span><p>Try <code>DELETE FROM vendors WHERE id = 1;</code>. It fails, because invoices still reference Atlas Logistics. Try <code>INSERT INTO invoices VALUES (107, 99, NULL, '2024-05-01', '2024-05-31', 100);</code>. It fails too: vendor 99 does not exist. That error is the database refusing to create an orphan invoice. Do not remove the constraint to make the error go away.</p></div>
+
+<!-- ============ L11 ============ -->
+<h2 id="l11"><span class="lv">Level 11</span>Designing tables</h2>
+<div class="why"><span class="t">Why</span><p>Most hard queries are caused by bad tables. A good design makes queries simple and makes bad data impossible to store: no invoice without a vendor, no negative amount, no due date before the invoice date.</p></div>
+<pre><code><span class="k">CREATE TABLE</span> invoices (
+  id             <span class="k">SERIAL PRIMARY KEY</span>,                     <span class="c">-- auto-numbered</span>
+  invoice_no     <span class="k">TEXT NOT NULL</span>,
+  vendor_id      <span class="k">INT NOT NULL REFERENCES</span> vendors(id),
+  cost_center_id <span class="k">INT REFERENCES</span> cost_centers(id),
+  invoice_date   <span class="k">DATE NOT NULL</span>,
+  due_date       <span class="k">DATE NOT NULL</span>,
+  amount         <span class="k">NUMERIC</span>(12,2) <span class="k">NOT NULL CHECK</span> (amount &gt; 0),
+  created_at     <span class="k">TIMESTAMPTZ NOT NULL DEFAULT</span> now(),
+  <span class="k">UNIQUE</span> (vendor_id, invoice_no),                       <span class="c">-- no duplicate billing</span>
+  <span class="k">CHECK</span>  (due_date &gt;= invoice_date)
+);</code></pre>
+<div class="tbl"><table>
+  <tr><th>Constraint</th><th>Prevents</th></tr>
+  <tr><td><code>PRIMARY KEY</code></td><td>Duplicate or missing ids</td></tr>
+  <tr><td><code>NOT NULL</code></td><td>Missing required values</td></tr>
+  <tr><td><code>UNIQUE (vendor_id, invoice_no)</code></td><td>The same vendor invoice entered twice (a duplicate payment risk)</td></tr>
+  <tr><td><code>REFERENCES</code> (foreign key)</td><td>An invoice pointing to a vendor that does not exist</td></tr>
+  <tr><td><code>CHECK</code></td><td>Values breaking a rule (negative amount, due before issued)</td></tr>
+</table></div>
+<h3>Foreign key options</h3>
+<p>When the referenced row is deleted, the foreign key decides what happens:</p>
+<ul>
+  <li><code>ON DELETE RESTRICT</code> (the default behaviour): refuse the delete. Right for vendors and invoices, which you should never lose.</li>
+  <li><code>ON DELETE CASCADE</code>: delete the child rows too. Right for invoice lines, which mean nothing without their invoice.</li>
+  <li><code>ON DELETE SET NULL</code>: keep the child, clear the link. Possible for a cost centre that is closed.</li>
+</ul>
+<h3>Choosing types</h3>
+<p>Use <code>NUMERIC(12,2)</code> for money, never <code>FLOAT</code> or <code>REAL</code>: floats round, and <code>0.1 + 0.2</code> is not exactly <code>0.3</code>. Use <code>DATE</code> for accounting dates and <code>TIMESTAMPTZ</code> for moments in time (when a row was created).</p>
+<h3>Normalisation in one sentence per form</h3>
+<ul>
+  <li><b>1NF</b>: one value per cell. No "GL: 6100, 6200" lists in a column; use a separate table of invoice lines.</li>
+  <li><b>2NF / 3NF</b>: every column describes the key, the whole key, and nothing but the key. The vendor's country belongs in <code>vendors</code>, not repeated on every invoice.</li>
+</ul>
+<h3>Relationships</h3>
+<ul>
+  <li><b>One-to-many</b>: one vendor, many invoices. The foreign key goes on the "many" side (<code>invoices.vendor_id</code>).</li>
+  <li><b>Many-to-many</b>: vendors ↔ cost centres allowed to buy from them. Use a <i>junction table</i> with two foreign keys and a primary key on both columns.</li>
+</ul>
+<div class="ex">
+<details><summary>Design an <code>invoice_lines</code> table: each invoice has several lines, each with a GL account and an amount.</summary><pre><code><span class="k">CREATE TABLE</span> gl_accounts (
+  code <span class="k">TEXT PRIMARY KEY</span>,           <span class="c">-- e.g. '6100'</span>
+  name <span class="k">TEXT NOT NULL</span>
+);
+<span class="k">CREATE TABLE</span> invoice_lines (
+  invoice_id <span class="k">INT REFERENCES</span> invoices(id) <span class="k">ON DELETE CASCADE</span>,
+  line_no    <span class="k">INT</span>,
+  gl_code    <span class="k">TEXT NOT NULL REFERENCES</span> gl_accounts(code),
+  amount     <span class="k">NUMERIC</span>(12,2) <span class="k">NOT NULL</span>,
+  <span class="k">PRIMARY KEY</span> (invoice_id, line_no)
+);</code></pre></details>
+<details><summary>Design the approved-vendor list (which cost centres may buy from which vendors).</summary><pre><code><span class="k">CREATE TABLE</span> approved_vendors (
+  vendor_id      <span class="k">INT REFERENCES</span> vendors(id),
+  cost_center_id <span class="k">INT REFERENCES</span> cost_centers(id),
+  approved_on    <span class="k">DATE NOT NULL DEFAULT CURRENT_DATE</span>,
+  <span class="k">PRIMARY KEY</span> (vendor_id, cost_center_id)
+);</code></pre></details>
+</div>
+
+<!-- ============ L12 ============ -->
+<h2 id="l12"><span class="lv">Level 12</span>Window functions</h2>
+<div class="why"><span class="t">Why</span><p>GROUP BY collapses rows: you get the vendor total but lose the individual invoices. A window function computes over a group <b>and keeps every row</b>. Running totals, month-over-month change, share of total and rankings are all window functions, and they are a favourite topic in finance and data interviews.</p></div>
+<pre><code><span class="k">SELECT</span> id, vendor_id, invoice_date, amount,
+  <span class="k">SUM</span>(amount) <span class="k">OVER</span> (<span class="k">ORDER BY</span> invoice_date)   <span class="k">AS</span> running_total,
+  <span class="k">SUM</span>(amount) <span class="k">OVER</span> (<span class="k">PARTITION BY</span> vendor_id) <span class="k">AS</span> vendor_total,
+  <span class="k">RANK</span>() <span class="k">OVER</span> (<span class="k">PARTITION BY</span> vendor_id <span class="k">ORDER BY</span> amount <span class="k">DESC</span>) <span class="k">AS</span> rnk
+<span class="k">FROM</span> invoices;</code></pre>
+<p><code>PARTITION BY</code> = "per group" (like GROUP BY, but without collapsing). <code>ORDER BY</code> inside <code>OVER</code> = "in what sequence", which you need for running totals and ranks.</p>
+<div class="tbl"><table>
+  <tr><th>Amounts</th><th>ROW_NUMBER</th><th>RANK</th><th>DENSE_RANK</th></tr>
+  <tr><td>15000</td><td>1</td><td>1</td><td>1</td></tr>
+  <tr><td>4500</td><td>2</td><td>2</td><td>2</td></tr>
+  <tr><td>4500</td><td>3</td><td>2</td><td>2</td></tr>
+  <tr><td>950</td><td>4</td><td>4</td><td>3</td></tr>
+</table></div>
+<h3>Month-over-month change with LAG</h3>
+<pre><code><span class="k">WITH</span> monthly <span class="k">AS</span> (
+  <span class="k">SELECT</span> <span class="k">DATE_TRUNC</span>(<span class="s">'month'</span>, invoice_date)::<span class="k">date</span> <span class="k">AS</span> month,
+         <span class="k">SUM</span>(amount) <span class="k">AS</span> spend
+  <span class="k">FROM</span> invoices <span class="k">GROUP BY</span> 1
+)
+<span class="k">SELECT</span> month, spend,
+       spend - <span class="k">LAG</span>(spend) <span class="k">OVER</span> (<span class="k">ORDER BY</span> month) <span class="k">AS</span> change
+<span class="k">FROM</span> monthly <span class="k">ORDER BY</span> month;
+<span class="c">-- Jan 12000 (–) · Feb 4500 (−7500) · Mar 12500 (+8000) · Apr 15950 (+3450)</span></code></pre>
+<h3>The classic: top N per group</h3>
+<pre><code><span class="k">WITH</span> ranked <span class="k">AS</span> (
+  <span class="k">SELECT</span> id, vendor_id, amount,
+         <span class="k">ROW_NUMBER</span>() <span class="k">OVER</span> (<span class="k">PARTITION BY</span> vendor_id
+                            <span class="k">ORDER BY</span> amount <span class="k">DESC</span>, id) <span class="k">AS</span> rn
+  <span class="k">FROM</span> invoices
+)
+<span class="k">SELECT</span> * <span class="k">FROM</span> ranked <span class="k">WHERE</span> rn = 1;   <span class="c">-- largest invoice per vendor</span></code></pre>
+<p>You cannot write <code>WHERE rn = 1</code> in the same query, because WHERE runs before window functions are computed. That is why the CTE is needed.</p>
+<div class="ex">
+<details><summary>Each vendor's share of total spend, in %.</summary><pre><code><span class="k">SELECT</span> v.name, <span class="k">SUM</span>(i.amount) <span class="k">AS</span> spend,
+  <span class="k">ROUND</span>(100 * <span class="k">SUM</span>(i.amount) / <span class="k">SUM</span>(<span class="k">SUM</span>(i.amount)) <span class="k">OVER</span> (), 1) <span class="k">AS</span> pct
+<span class="k">FROM</span> invoices i <span class="k">JOIN</span> vendors v <span class="k">ON</span> v.id = i.vendor_id
+<span class="k">GROUP BY</span> v.name
+<span class="k">ORDER BY</span> spend <span class="k">DESC</span>;</code></pre><p class="result">Atlas 60.1% · Nordic 20.0% · Lumen 17.8% · Gulf 2.1%. <code>SUM(SUM(x)) OVER ()</code> = the grand total of the grouped sums.</p></details>
+<details><summary>Cumulative amount paid on invoice 106, payment by payment.</summary><pre><code><span class="k">SELECT</span> id, paid_on, amount,
+  <span class="k">SUM</span>(amount) <span class="k">OVER</span> (<span class="k">ORDER BY</span> paid_on) <span class="k">AS</span> paid_to_date
+<span class="k">FROM</span> payments
+<span class="k">WHERE</span> invoice_id = 106;</code></pre><p class="result">5000, then 7500.</p></details>
+</div>
+
+<!-- ============ L13 ============ -->
+<h2 id="l13"><span class="lv">Level 13</span>Indexes and transactions</h2>
+<h3>Indexes</h3>
+<div class="why"><span class="t">Why</span><p>Without an index, <code>WHERE vendor_id = 2</code> reads <b>every row</b> (a "sequential scan"). An index works like a book's index: a sorted lookup that jumps straight to the matching rows. On ten million invoice lines, that can take a month-end query from minutes to milliseconds.</p></div>
+<pre><code><span class="k">CREATE INDEX</span> idx_invoices_vendor   <span class="k">ON</span> invoices (vendor_id);
+<span class="k">CREATE INDEX</span> idx_payments_invoice  <span class="k">ON</span> payments (invoice_id);
+<span class="k">CREATE INDEX</span> idx_invoices_vendor_date <span class="k">ON</span> invoices (vendor_id, invoice_date);
+
+<span class="k">EXPLAIN ANALYZE</span>
+<span class="k">SELECT</span> * <span class="k">FROM</span> invoices <span class="k">WHERE</span> vendor_id = 2;</code></pre>
+<ul>
+  <li>Index the columns you filter on, join on and sort by. PostgreSQL does <b>not</b> automatically index foreign key columns, so index them yourself.</li>
+  <li>In a multi-column index, order matters. <code>(vendor_id, invoice_date)</code> helps queries that filter by vendor, but not queries that filter by date alone.</li>
+  <li>Indexes cost something: writes get slower and they use disk space. Add them when <code>EXPLAIN</code> shows a slow scan, not "just in case".</li>
+  <li><code>WHERE UPPER(name) = …</code> or <code>LIKE '%x'</code> cannot use a normal index.</li>
+</ul>
+<h3>Transactions</h3>
+<div class="why"><span class="t">Why</span><p>Paying an invoice means two changes: money leaves the bank account, and a payment row is recorded. If the second step fails, the first must be undone too, or the books no longer balance. A transaction makes a group of statements <b>all-or-nothing</b>.</p></div>
+<pre><code><span class="k">BEGIN</span>;
+<span class="k">UPDATE</span> bank_accounts <span class="k">SET</span> balance = balance - 4500 <span class="k">WHERE</span> id = 1;
+<span class="k">INSERT INTO</span> payments <span class="k">VALUES</span> (6, 103, <span class="s">'2024-07-01'</span>, 4500);
+<span class="k">COMMIT</span>;   <span class="c">-- any error before this → ROLLBACK</span>
+<span class="c">-- (bank_accounts is an imaginary table, for illustration)</span></code></pre>
+<p>Transactions guarantee <b>ACID</b>: <b>A</b>tomic (all or nothing), <b>C</b>onsistent (the constraints always hold), <b>I</b>solated (other sessions don't see your half-finished work), and <b>D</b>urable (once committed, the data survives a crash). It is the same idea as a journal entry whose debits must equal its credits before it can be posted.</p>
+
+<!-- ============ L14 ============ -->
+<h2 id="l14"><span class="lv">Level 14</span>The road after this</h2>
+<p>You now know the SQL that most finance and analytics jobs use every day. Here is how to make it stick:</p>
+<ol>
+  <li><b>Daily reps (2 weeks)</b>: 3 problems a day on <a href="https://sqlbolt.com/">SQLBolt</a>, then <a href="https://www.hackerrank.com/domains/sql">HackerRank SQL</a> (easy → medium).</li>
+  <li><b>Interview level</b>: <a href="https://leetcode.com/studyplan/top-sql-50/">LeetCode "SQL 50"</a> and <a href="https://datalemur.com/">DataLemur</a>, which has real analytics interview questions, many built on window functions.</li>
+  <li><b>Your own data</b>: export an AP or GL report to CSV, load it into a scratch database, and rebuild a report you already know. Reconcile your SQL totals against the system's totals until they match to the cent.</li>
+  <li><b>Next topics</b>: budget vs actual (joining two fact tables at the same grain), currency conversion with an FX rates table, and period-end snapshots.</li>
+</ol>
+<div class="say"><span class="t">Self-check: you're "hero" level when you can…</span>
+<p>✔ explain which foreign key each JOIN follows · ✔ say why INNER JOIN hides uncoded invoices · ✔ spot and fix fan-out after joining payments · ✔ build an open-balance and aging report from scratch · ✔ write "top N per group" without looking · ✔ say why <code>NOT IN</code> with NULLs returns nothing · ✔ say when to add an index and prove it with <code>EXPLAIN ANALYZE</code>.</p></div>
+
+<footer>Quick reference → <a href="sql-cheat-sheet.html">SQL Cheat Sheet</a>. Examples use PostgreSQL. MySQL and SQL Server differ mainly in <code>LIMIT</code> (SQL Server: <code>TOP</code>), <code>ILIKE</code>, <code>||</code> (MySQL: <code>CONCAT</code>), <code>FILTER</code>, and date functions.</footer>
+</div>
+<div class="theme-switch" role="group" aria-label="Colour theme">
+  <button type="button" data-theme-set="light" aria-pressed="false" title="Light"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg><span>Light</span></button>
+  <button type="button" data-theme-set="sepia" aria-pressed="false" title="Eye care"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 4C10 4 4 9 4 16a4 4 0 0 0 4 4c7 0 12-6 12-16Z"/><path d="M4 20c4-6 8-8 12-9"/></svg><span>Eye care</span></button>
+  <button type="button" data-theme-set="dark" aria-pressed="false" title="Dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 13a8.5 8.5 0 0 1-10-10 8.5 8.5 0 1 0 10 10Z"/></svg><span>Dark</span></button>
+</div>
+<script>
+/* theme switcher: light / eye care / dark, remembered per browser */
+(function () {
+  var KEY = "sql-theme", root = document.documentElement;
+  var btns = [].slice.call(document.querySelectorAll("[data-theme-set]"));
+  function paint(v) { btns.forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-theme-set") === v)); }); }
+  function apply(v, persist) {
+    if (v) { root.setAttribute("data-theme", v); } else { root.removeAttribute("data-theme"); }
+    paint(v);
+    if (persist) { try { localStorage.setItem(KEY, v || ""); } catch (e) {} }
+  }
+  btns.forEach(function (b) { b.addEventListener("click", function () { apply(b.getAttribute("data-theme-set"), true); }); });
+  var saved = null;
+  try { saved = localStorage.getItem(KEY); } catch (e) {}
+  if (saved) { apply(saved, false); } else { paint(null); }
+})();
+</script>
+</body>
+</html>
